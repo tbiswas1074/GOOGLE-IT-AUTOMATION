@@ -1,18 +1,37 @@
-#! /usr/bin/env python
+#!/usr/bin/env python3
 import os
 import requests
 
-directory = "data/feedback"
+# set source dir for feedback file:
+src_dir = "/data/feedback/"
 
-for filename in os.listdir(directory):
-    if filename.endswith(".txt"):
-        with open(os.path.join(directory, filename)) as file:
-            lines = file.readlines()
-            title = lines[0].strip()
-            name = lines[1].strip()
-            date = lines[2].strip()
-            feedback = lines[3].strip()
-            data = {"title": title, "name": name, "date": date, "feedback": feedback}
-            res = requests.post("http://34.122.122.5/feedback/", data=data)
-            print("status_code ",res.status_code)
+# capture list of files:
+files = os.listdir(src_dir)
+
+# function to read file lines into list:
+def readlines(file):
+    with open(src_dir + file) as f:
+        lines = f.read().splitlines()
+    return lines
+
+
+# load feedback entries into dictionary:
+feedback = []
+keys = ["title", "name", "date", "feedback"]
+for file in files:
+    lines = readlines(file)
+    feedback.append(dict(zip(keys, lines)))
+
+# set host url:
+url = "http://localhost/feedback/"
+
+# post feedback entries:
+for entry in feedback:
+    response = requests.post(url, data=entry)
+    if response.ok:
+        print("loaded entry")
+    else:
+        print(f"load entry error: {response.status_code}")
+
+
 
